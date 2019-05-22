@@ -23,14 +23,13 @@ class DeviceDef:
         return self.get_device(device_id).find("FacilityLinks")
 
     def device_dg_mappings(self, device_id, array_type):
-        """
-        Need to create a need DataGroup if it does not exist.
-        Load from list of xml DataGroup Templates
-        """
+        # TODO : Create new DataGroup from xml template if one does not exist
         dgs = self.device_dgs_element(device_id)
         return dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type))
 
     def add_maps(self, device_id, array_type, maps):
+        # TODO : Check of the mapping already exists
+        # TODO : Check in DTF in the Data Element ID exists in that array
         mappings = self.device_dg_mappings(device_id, array_type)
         for m in maps:
             SubElement(mappings, "UdcMapping", {
@@ -39,9 +38,12 @@ class DeviceDef:
                 "facility": m.fac
             })
 
-    # def add_fac(self, fac, device_id):
-    #     fac_elem = self.device_facs_element(device_id)
-    #     SubElement(fac_elem, "FacilityLink", {"id": fac, "ordinal": str(len(fac_elem))})
+    def add_facs(self, facs, device_id):
+        fac_elem = self.device_facs_element(device_id)
+        for f in facs:
+            if fac_elem.find(".//*[@id='{}']".format(f)) is None:
+                SubElement(fac_elem, "FacilityLink", {"id": f, "ordinal": str(len(fac_elem))})
+                print("{} was linkded".format(f))
 
     def save(self, xml_file):
         et = ElementTree(self.xml)
