@@ -23,25 +23,35 @@ class DeviceDef:
         return self.get_device(device_id).find("FacilityLinks")
 
     def device_dg_mappings(self, device_id, array_type):
-        # TODO : Create new DataGroup from xml template if one does not exist
         dgs = self.device_dgs_element(device_id)
+        if dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type)) is None:
+            dg = DataGroup(device_id, device_id, array_type)
+            dgs.append(dg.dg_element)
+            print(dg)
+            print("appended {} {} DataGroup".format(device_id, array_type))
         return dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type))
 
     def add_maps(self, device_id, array_type, maps):
-        # TODO : Check of the mapping already exists
         # TODO : Check in DTF in the Data Element ID exists in that array
         mappings = self.device_dg_mappings(device_id, array_type)
         for m in maps:
-            SubElement(mappings, "UdcMapping", {
-                "UDC": m.udc,
-                "data_element_id": m.data_id,
-                "facility": m.fac
-            })
+            if mappings.find(".//UdcMapping[@UDC='{}'][@data_element_id='{}'][@facility='{}']".format(
+                    m.udc,
+                    m.data_id,
+                    m.fac)
+            ) is None:
+                SubElement(mappings, "UdcMapping", {
+                    "UDC": m.udc,
+                    "data_element_id": m.data_id,
+                    "facility": m.fac
+                })
+            else:
+                print("{} {} {} mapping already exists".format(m.udc, m.data_id, m.fac))
 
     def add_facs(self, facs, device_id):
         fac_elem = self.device_facs_element(device_id)
         for f in facs:
-            if fac_elem.find(".//*[@id='{}']".format(f)) is None:
+            if fac_elem.find("./FacilityLink[@id='{}']".format(f)) is None:
                 SubElement(fac_elem, "FacilityLink", {"id": f, "ordinal": str(len(fac_elem))})
                 print("{} was linkded".format(f))
 
@@ -54,7 +64,6 @@ class DeviceDef:
 
 class DataGroup:
     def __init__(self, description, fac_id, dg_type):
-        self.mappings = []
         self.description = description
         self.fac_id = fac_id
         self.dg_type = dg_type
@@ -62,7 +71,7 @@ class DataGroup:
         self.create_element()
 
     def create_element(self):
-        tree = ET.parse("dataGroupShell.xml")
+        tree = ET.parse("utils/DataGroup.xml")
         root = tree.getroot()
         root.find("DataGroupAttributes/Description").text = self.description
         root.find("DataGroupAttributes/FacilityId").text = self.fac_id
@@ -72,14 +81,6 @@ class DataGroup:
     @property
     def udc_maps(self):
         return self.dg_element.find("UdcMappings")
-
-    def add_map(self, udc_map):
-        self.mappings.append(udc_map)
-        SubElement(self.udc_maps, "UdcMapping", {
-            "UDC": udc_map.udc,
-            "data_element_id": udc_map.data_id,
-            "facility": udc_map.fac
-        })
 
 
 class UdcMap:
