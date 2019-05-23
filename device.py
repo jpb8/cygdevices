@@ -31,7 +31,6 @@ class DeviceDef:
         return dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type))
 
     def add_maps(self, device_id, array_type, maps):
-        # TODO : Check in DTF in the Data Element ID exists in that array
         mappings = self.device_dg_mappings(device_id, array_type)
         for m in maps:
             if mappings.find(".//UdcMapping[@UDC='{}'][@data_element_id='{}'][@facility='{}']".format(

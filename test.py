@@ -4,7 +4,7 @@ import pandas as pd
 
 mappings = pd.read_excel("docs/Book1.xlsx", sheet_name="Sheet1")
 dd = DeviceDef("docs/CO1_delta0515.xml")
-dtfxml = DTF('docs/NGL_ET_AB_CIP_20190502-1318.dtf')
+dtfxml = DTF("NGL_ET_AB_CIP_20190502_1318.dtf")
 
 devices = mappings.device.unique()
 for d in devices:
@@ -16,7 +16,7 @@ for d in devices:
         maps = []
         for i, p in arr_points.iterrows():
             udc = UdcMap(p["uniformdatacode"], p["indexed"], p["facilityid"])
-            if dtfxml.check_dg_element(da, udc.data_id) is not None:
+            if dtfxml.check_dg_element(da, udc.data_id):
                 maps.append(udc)
             else:
                 print("{} not found in {} array".format(udc.data_id, da))
