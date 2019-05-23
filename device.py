@@ -1,4 +1,4 @@
-from xml.etree.ElementTree import Element, SubElement, Comment, tostring, ElementTree
+from xml.etree.ElementTree import SubElement, ElementTree
 import xml.etree.ElementTree as ET
 
 
@@ -27,7 +27,6 @@ class DeviceDef:
         if dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type)) is None:
             dg = DataGroup(device_id, device_id, array_type)
             dgs.append(dg.dg_element)
-            print(dg)
             print("appended {} {} DataGroup".format(device_id, array_type))
         return dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type))
 
