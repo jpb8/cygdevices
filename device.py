@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 
 
 class DeviceDef:
+    # TODO : Create log of errors and output method
     def __init__(self, device_xml_path):
         self.xml = None
         self.device_xml_path = device_xml_path
@@ -13,17 +14,22 @@ class DeviceDef:
         root = tree.getroot()
         self.xml = root
 
+    def check_device(self, device_id):
+        return True if self.xml.find('./Device[@device_id="{}"]'.format(device_id)) is not None else None
+
     def get_device(self, device_id):
         return self.xml.find('./Device[@device_id="{}"]'.format(device_id))
 
     def device_dgs_element(self, device_id):
-        return self.get_device(device_id).find("DataGroups")
+        return self.get_device(device_id).find("DataGroups") if self.get_device(device_id) is not None else None
 
     def device_facs_element(self, device_id):
-        return self.get_device(device_id).find("FacilityLinks")
+        return self.get_device(device_id).find("FacilityLinks") if self.get_device(device_id) is not None else None
 
     def device_dg_mappings(self, device_id, array_type):
         dgs = self.device_dgs_element(device_id)
+        if dgs is None:
+            return False
         if dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type)) is None:
             dg = DataGroup(device_id, device_id, array_type)
             dgs.append(dg.dg_element)
@@ -32,26 +38,32 @@ class DeviceDef:
 
     def add_maps(self, device_id, array_type, maps):
         mappings = self.device_dg_mappings(device_id, array_type)
-        for m in maps:
-            if mappings.find(".//UdcMapping[@UDC='{}'][@data_element_id='{}'][@facility='{}']".format(
-                    m.udc,
-                    m.data_id,
-                    m.fac)
-            ) is None:
-                SubElement(mappings, "UdcMapping", {
-                    "UDC": m.udc,
-                    "data_element_id": m.data_id,
-                    "facility": m.fac
-                })
-            else:
-                print("{} {} {} mapping already exists".format(m.udc, m.data_id, m.fac))
+        if mappings is not None:
+            for m in maps:
+                if mappings.find(".//UdcMapping[@UDC='{}'][@data_element_id='{}'][@facility='{}']".format(
+                        m.udc,
+                        m.data_id,
+                        m.fac)
+                ) is None:
+                    SubElement(mappings, "UdcMapping", {
+                        "UDC": m.udc,
+                        "data_element_id": m.data_id,
+                        "facility": m.fac
+                    })
+                else:
+                    print("{} {} {} mapping already exists".format(m.udc, m.data_id, m.fac))
+        else:
+            return False
 
     def add_facs(self, facs, device_id):
         fac_elem = self.device_facs_element(device_id)
-        for f in facs:
-            if fac_elem.find("./FacilityLink[@id='{}']".format(f)) is None:
-                SubElement(fac_elem, "FacilityLink", {"id": f, "ordinal": str(len(fac_elem))})
-                print("{} was linkded".format(f))
+        if fac_elem is not None:
+            for f in facs:
+                if fac_elem.find("./FacilityLink[@id='{}']".format(f)) is None:
+                    SubElement(fac_elem, "FacilityLink", {"id": f, "ordinal": str(len(fac_elem))})
+                    print("{} was linkded".format(f))
+        else:
+            return False
 
     def save(self, xml_file):
         et = ElementTree(self.xml)

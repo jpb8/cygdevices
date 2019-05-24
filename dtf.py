@@ -20,6 +20,14 @@ class DTF:
     def check_dg_element(self, array_type, element):
         return True if self.find_dg_element(array_type, element) is not None else False
 
+    def get_analog_deid(self, array_name, index, reg):
+        tag = "{}[{}]".format(index, reg)
+        deid = self.xml.find("dataGroups/{}/dgElements/*[@tagname='{}']".format(array_name, tag))
+        return deid.tag if deid is not None else False
+
+    def get_discrete_deid(self, array_name, index, index2=None):
+        pass
+
     def create_array_excel(self, array_file_name, deid_file_name):
         data_groups = self.xml.find('dataGroups')
         arrs = {"id": [], "niceName": []}
