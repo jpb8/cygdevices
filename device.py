@@ -3,21 +3,34 @@ import xml.etree.ElementTree as ET
 
 
 class DeviceDef:
-    # TODO : Create log of errors and output method
     def __init__(self, device_xml_path):
         self.xml = None
         self.device_xml_path = device_xml_path
         self.create_xml()
 
     def create_xml(self):
+        """
+        Sets the xml prop to an ETREE root with the supplied xml file
+        :return:
+        """
         tree = ET.parse(self.device_xml_path)
         root = tree.getroot()
         self.xml = root
 
     def check_device(self, device_id):
+        """
+        Check to see of the device exists in the xml by looking for the device_id attr in the device elements
+        :param device_id:
+        :return: True if exists, False if Not
+        """
         return True if self.xml.find('./Device[@device_id="{}"]'.format(device_id)) is not None else None
 
     def get_device(self, device_id):
+        """
+        Gets device element
+        :param device_id: Name of the device in CygNet
+        :return: ETREE element for that device
+        """
         return self.xml.find('./Device[@device_id="{}"]'.format(device_id))
 
     def device_dgs_element(self, device_id):
@@ -27,6 +40,11 @@ class DeviceDef:
         return self.get_device(device_id).find("FacilityLinks") if self.get_device(device_id) is not None else None
 
     def device_dg_mappings(self, device_id, array_type):
+        """
+        :param device_id: CygNet Device name
+        :param array_type: The array name inside the device
+        :return: Tuple of the DataGroup UdcMappings Element and Error message
+        """
         dgs = self.device_dgs_element(device_id)
         if dgs is None:
             return None, "Device {} Not Found".format(device_id)
@@ -38,6 +56,14 @@ class DeviceDef:
         return dgs.find('./DataGroup/DataGroupAttributes/[DataGroupType="{}"].../UdcMappings'.format(array_type)), ""
 
     def add_maps(self, device_id, array_type, maps):
+        """
+        Maps all supplied UDCs the given Device's Array.
+        Checks all UCDs to see they already exist
+        :param device_id: CygNet Device name
+        :param array_type: The array name inside the device
+        :param maps: List of UDCs to be mapped
+        :return: Any errors
+        """
         mappings, err = self.device_dg_mappings(device_id, array_type)
         errs = []
         if mappings is None:
@@ -59,6 +85,12 @@ class DeviceDef:
         return errs
 
     def add_facs(self, facs, device_id):
+        """
+        Addes all facs to the device's FacilityLinks Element
+        :param facs: List of Facility names
+        :param device_id: Device the facilities should be mapped too
+        :return: Any errors
+        """
         fac_elem = self.device_facs_element(device_id)
         log = []
         if fac_elem is not None:
@@ -97,6 +129,9 @@ class DataGroup:
 
 
 class UdcMap:
+    """
+    Used to build UdcMappings in the DeviceDef class
+    """
     def __init__(self, udc, data_id, fac):
         self.udc = udc
         self.data_id = data_id

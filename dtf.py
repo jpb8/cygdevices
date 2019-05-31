@@ -10,17 +10,32 @@ class DTF:
         self.create_xml()
 
     def create_xml(self):
+        """
+        Sets the xml prop to an ETREE root with the supplied xml file
+        """
         tree = ET.parse(self.device_xml_path)
         root = tree.getroot()
         self.xml = root
 
     def find_dg_element(self, array_type, element):
+        """
+        Finds the DEID in an array
+        :param array_type:
+        :param element: DEID
+        :return:
+        """
         return self.xml.find('dataGroups/{}/dgElements/{}'.format(array_type, element))
 
     def check_dg_element(self, array_type, element):
         return True if self.find_dg_element(array_type, element) is not None else False
 
     def get_analog_deid(self, array_name, index, reg):
+        """
+        :param array_name: CygNet Array Name
+        :param index: First part of nicename DEID attr
+        :param reg: Device register
+        :return: DEID Tag
+        """
         tag = "{}[{}]".format(index, reg)
         deid = self.xml.find("dataGroups/{}/dgElements/*[@tagname='{}']".format(array_name, tag))
         return deid.tag if deid is not None else False
@@ -29,6 +44,12 @@ class DTF:
         pass
 
     def create_array_excel(self, array_file_name, deid_file_name):
+        """
+        Exports all the of Arrays and DEID for a supplied DTF
+        :param array_file_name: Excel file name
+        :param deid_file_name: Excel file name
+        :return: None
+        """
         data_groups = self.xml.find('dataGroups')
         arrs = {"id": [], "niceName": []}
         dg_elems = {"deid": [], "array_id": [], "tagName": [], "niceName": [], "desc": []}
