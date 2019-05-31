@@ -1,4 +1,5 @@
-import xml.etree.ElementTree as ET
+from lxml import etree
+from lxml.etree import SubElement
 import pandas as pd
 
 
@@ -13,7 +14,7 @@ class DTF:
         """
         Sets the xml prop to an ETREE root with the supplied xml file
         """
-        tree = ET.parse(self.device_xml_path)
+        tree = etree.parse(self.device_xml_path)
         root = tree.getroot()
         self.xml = root
 
@@ -32,7 +33,7 @@ class DTF:
     def get_analog_deid(self, array_name, index, reg):
         """
         :param array_name: CygNet Array Name
-        :param index: First part of nicename DEID attr
+        :param index: First part of tagname DEID attr
         :param reg: Device register
         :return: DEID Tag
         """
@@ -42,6 +43,16 @@ class DTF:
 
     def get_discrete_deid(self, array_name, index, index2=None):
         pass
+
+    def create_deid(self, array_type, deid, index, reg, data_type="r4"):
+        dg_elem = self.xml.find('dataGroups/{}/dgElements')
+        nice_name = "{} {}".format(index, reg)
+        SubElement(dg_elem, deid, {
+            "niceName": nice_name,
+            "desc": nice_name,
+            "tagname": "{}[{}]".format(index, reg),
+            "type": data_type
+        })
 
     def create_array_excel(self, array_file_name, deid_file_name):
         """
@@ -68,3 +79,8 @@ class DTF:
         df2 = pd.DataFrame(data=dg_elems)
         df.to_excel(array_file_name)
         df2.to_excel(deid_file_name)
+
+    def save(self, xml_file):
+        file = open(xml_file, "wb")
+        file.write(etree.tostring(self.xml, pretty_print=True))
+        file.close()

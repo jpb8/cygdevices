@@ -1,5 +1,5 @@
-from xml.etree.ElementTree import SubElement, ElementTree
-import xml.etree.ElementTree as ET
+from lxml import etree
+from lxml.etree import Element, SubElement, ElementTree
 
 
 class DeviceDef:
@@ -13,7 +13,8 @@ class DeviceDef:
         Sets the xml prop to an ETREE root with the supplied xml file
         :return:
         """
-        tree = ET.parse(self.device_xml_path)
+        parser = etree.XMLParser(remove_blank_text=True)
+        tree = etree.parse(self.device_xml_path, parser)
         root = tree.getroot()
         self.xml = root
 
@@ -101,9 +102,8 @@ class DeviceDef:
         return log
 
     def save(self, xml_file):
-        et = ElementTree(self.xml)
         file = open(xml_file, "wb")
-        et.write(file)
+        file.write(etree.tostring(self.xml, pretty_print=True))
         file.close()
 
 
@@ -116,7 +116,7 @@ class DataGroup:
         self.create_element()
 
     def create_element(self):
-        tree = ET.parse("utils/DataGroup.xml")
+        tree = etree.parse("utils/DataGroup.xml")
         root = tree.getroot()
         root.find("DataGroupAttributes/Description").text = self.description
         root.find("DataGroupAttributes/FacilityId").text = self.fac_id
@@ -132,6 +132,7 @@ class UdcMap:
     """
     Used to build UdcMappings in the DeviceDef class
     """
+
     def __init__(self, udc, data_id, fac):
         self.udc = udc
         self.data_id = data_id
