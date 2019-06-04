@@ -58,7 +58,8 @@ def dds_excel_import(mappings, dd, dtfxml):
 
 
 if __name__ == '__main__':
-    mappings = pd.read_excel("docs/C15_delta0530.xlsx", sheet_name="Sheet1")
-    dd = DeviceDef("docs/deviceDefinitions_20190530_pre_delta.xml")
-    dtfxml = DTF("docs/NGL_DTF.dtf")
-    dds_excel_import(mappings, dd, dtfxml)
+    # mappings = pd.read_excel("docs/C15_delta0530.xlsx", sheet_name="Sheet1")
+    dd = DeviceDef("docs/deviceDefinitions_20190530_updated.xml")
+    # dtfxml = DTF("docs/NGL_ET_AB_CIP_delta_updated.dtf")
+    # dds_excel_import(mappings, dd, dtfxml)
+    dd.export_mappings("docs/test.xlsx")

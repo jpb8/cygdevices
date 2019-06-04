@@ -44,8 +44,8 @@ class DTF:
     def get_discrete_deid(self, array_name, index, index2=None):
         pass
 
-    def create_deid(self, array_type, deid, index, reg, data_type="r4"):
-        dg_elem = self.xml.find('dataGroups/{}/dgElements')
+    def create_ai_deid(self, array_type, deid, index, reg, data_type="r4"):
+        dg_elem = self.xml.find('dataGroups/{}/dgElements'.format(array_type))
         nice_name = "{} {}".format(index, reg)
         SubElement(dg_elem, deid, {
             "niceName": nice_name,
