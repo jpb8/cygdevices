@@ -57,9 +57,18 @@ def dds_excel_import(mappings, dd, dtfxml):
             f.write("{}\n".format(e))
 
 
+
+
 if __name__ == '__main__':
     # mappings = pd.read_excel("docs/C15_delta0530.xlsx", sheet_name="Sheet1")
-    dd = DeviceDef("docs/deviceDefinitions_20190530_updated.xml")
-    # dtfxml = DTF("docs/NGL_ET_AB_CIP_delta_updated.dtf")
+    facs = pd.read_excel("docs/CRD2_allFacs.xlsx", sheet_name="Sheet1")
+    all_facs = facs["id"].to_list()
+    dd = DeviceDef("docs/dds_CRD2_20190606.xml")
+    dd.correct_dev_check()
+    # dtfxml = DTF("docs/NGL_ET_AB_CIP_20190605.dtf")
+    # dtfxml.create_array_excel("docs/arrays.xlsx", "docs/deids_NGL_ET_AB_CIP_20190605.xlsx")
     # dds_excel_import(mappings, dd, dtfxml)
-    dd.export_mappings("docs/test.xlsx")
+    # dd.export_mappings("docs/dds_NGLC15_dds_export_20190605.xlsx")
+    # orphans = dd.find_orphans(dtfxml)
+    # df = pd.DataFrame(orphans)
+    # df.to_excel("docs/orphans_20190605.xlsx")

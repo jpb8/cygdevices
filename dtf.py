@@ -67,9 +67,7 @@ class DTF:
         for elem in data_groups:
             arrs["id"].append(elem.tag)
             arrs["niceName"].append(elem.get("niceName"))
-            print(elem.tag, elem.get("niceName"))
             for died in elem.find("dgElements"):
-                print(died.tag, died.get("niceName"), died.get("tagname"), died.get("desc"))
                 dg_elems["deid"].append(died.tag)
                 dg_elems["array_id"].append(elem.tag)
                 dg_elems["tagName"].append(died.get("tagname"))

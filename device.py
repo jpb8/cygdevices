@@ -125,7 +125,6 @@ class DeviceDef:
             "udc": []
         }
         for elem in self.xml:
-            # TODO: Command export - Loop through commands and group the DataGroup it is linked to grab data
             dev_id = elem.get("device_id")
             comm_id = elem.find("DeviceAttributes/CommunicationId1").text
             for data_group in elem.find("DataGroups"):
@@ -228,6 +227,64 @@ class DeviceDef:
                     elif c_type == "CYUPDTPT":
                         _cyupdtpt(_cmd)
         return pd.DataFrame(data=cmd_dict)
+
+    def mapped_fac_check(self):
+        # TODO: Return list/dict
+        for elem in self.xml:
+            facs = []
+            dev_id = elem.get("device_id")
+            for data_group in elem.find("DataGroups"):
+                dg_type = data_group.find("DataGroupAttributes/DataGroupType").text
+                for m in data_group.find("UdcMappings"):
+                    facs.append(m.get("facility")) if m.get("facility") not in facs else None
+            for f in facs:
+                fac_link = elem.find("FacilityLinks/FacilityLink[@id='{}']".format(f))
+                print("{}, {}".format(dev_id, f)) if fac_link is None else None
+
+    def fac_exists_check(self, facs):
+        # TODO: Return list/dict
+        for elem in self.xml:
+            dev_id = elem.get("device_id")
+            for f in elem.find("FacilityLinks"):
+                print("{}, {}".format(dev_id, f.get("id"))) if f.get("id") not in facs else None
+
+    def correct_dev_check(self):
+        # TODO: Return list/dict
+        for elem in self.xml:
+            dev_id = elem.get("device_id").split("_")[0]
+            dev_full = elem.get("device_id")
+            for data_group in elem.find("DataGroups"):
+                dg_type = data_group.find("DataGroupAttributes/DataGroupType").text
+                for m in data_group.find("UdcMappings"):
+                    if m.get("facility").split("_")[0] != dev_id:
+                        print("{},{},{},{},{}".format(
+                            m.get("data_element_id"),
+                            m.get("facility"),
+                            m.get("UDC"),
+                            dg_type,
+                            dev_full
+                        ))
+
+
+
+
+    def find_orphans(self, dtf):
+        orphans = {
+            "device": [],
+            "array": [],
+            "deid": []
+        }
+        for elem in self.xml:
+            dev_id = elem.get("device_id")
+            for data_group in elem.find("DataGroups"):
+                dg_type = data_group.find("DataGroupAttributes/DataGroupType").text
+                for m in data_group.find("UdcMappings"):
+                    chck = dtf.check_dg_element(dg_type, m.get("data_element_id"))
+                    if not chck:
+                        orphans['device'].append(dev_id)
+                        orphans['array'].append(dg_type)
+                        orphans['deid'].append(m.get("data_element_id"))
+        return orphans
 
     def export_mappings(self, file_name):
         df_pnt = self.export_data()
