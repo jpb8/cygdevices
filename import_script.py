@@ -57,8 +57,6 @@ def dds_excel_import(mappings, dd, dtfxml):
             f.write("{}\n".format(e))
 
 
-
-
 if __name__ == '__main__':
     # mappings = pd.read_excel("docs/C15_delta0530.xlsx", sheet_name="Sheet1")
     facs = pd.read_excel("docs/CRD2_allFacs.xlsx", sheet_name="Sheet1")

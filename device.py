@@ -1,5 +1,5 @@
 from lxml import etree
-from lxml.etree import Element, SubElement, ElementTree
+from lxml.etree import SubElement
 import pandas as pd
 
 
@@ -109,10 +109,8 @@ class DeviceDef:
 
     def export_data(self):
         """
-        Exports all the of Arrays and DEID for a supplied DTF
-        :param array_file_name: Excel file name
-        :param deid_file_name: Excel file name
-        :return: None
+        Export all UIS mappings for easy validation
+        :return: Pandas DF of all UIS mappings
         """
         devs_dict = {
             "dev_id": [],
@@ -142,6 +140,11 @@ class DeviceDef:
         return pd.DataFrame(data=devs_dict)
 
     def uis_commands(self):
+        """
+        Format DDS XML to a usable Excel dataframe to for mapping validation
+        Every component will have single line
+        :return: Pandas DataFrame of all components in the xml
+        """
         def _dg_type(s_cmd):
             s_cmd["dev_id"] = dev_id
             s_cmd["comm_id"] = comm_id
@@ -229,7 +232,10 @@ class DeviceDef:
         return pd.DataFrame(data=cmd_dict)
 
     def mapped_fac_check(self):
-        # TODO: Return list/dict
+        """
+        :return: A list and their devices that are not mapped correctly
+        """
+        unmapped = []
         for elem in self.xml:
             facs = []
             dev_id = elem.get("device_id")
@@ -239,17 +245,33 @@ class DeviceDef:
                     facs.append(m.get("facility")) if m.get("facility") not in facs else None
             for f in facs:
                 fac_link = elem.find("FacilityLinks/FacilityLink[@id='{}']".format(f))
-                print("{}, {}".format(dev_id, f)) if fac_link is None else None
+                unmapped.append({
+                    "facility": fac_link,
+                    "device": dev_id
+                })
+        return unmapped
 
     def fac_exists_check(self, facs):
-        # TODO: Return list/dict
+        """
+        :param facs:
+        :return: A list of facilities and their device that do no exist in the supplied Facility list
+        """
+        dne = []
         for elem in self.xml:
             dev_id = elem.get("device_id")
             for f in elem.find("FacilityLinks"):
-                print("{}, {}".format(dev_id, f.get("id"))) if f.get("id") not in facs else None
+                dne.append({
+                    "device": dev_id,
+                    "facility": f.get("id")
+                })
+        return dne
 
     def correct_dev_check(self):
-        # TODO: Return list/dict
+        """
+        Check the first 4 letters in every facility and check that it matches with the first 4 of the device
+        :return: List of all Points that do not match
+        """
+        non_matches = []
         for elem in self.xml:
             dev_id = elem.get("device_id").split("_")[0]
             dev_full = elem.get("device_id")
@@ -257,16 +279,14 @@ class DeviceDef:
                 dg_type = data_group.find("DataGroupAttributes/DataGroupType").text
                 for m in data_group.find("UdcMappings"):
                     if m.get("facility").split("_")[0] != dev_id:
-                        print("{},{},{},{},{}".format(
-                            m.get("data_element_id"),
-                            m.get("facility"),
-                            m.get("UDC"),
-                            dg_type,
-                            dev_full
-                        ))
-
-
-
+                        non_matches.append({
+                            "deid": m.get("data_element_id"),
+                            "facility": m.get("facility"),
+                            "udc": m.get("UDC"),
+                            "dg_type": dg_type,
+                            "device": dev_full,
+                        })
+        return non_matches
 
     def find_orphans(self, dtf):
         orphans = {
